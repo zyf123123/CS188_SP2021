@@ -114,12 +114,42 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    stack = util.Stack()
+    stack.push((problem.getStartState(),[]))
+    visited = []
+    while not stack.isEmpty():
+        node, path = stack.pop()
+        visited.append(node)
+        if problem.isGoalState(node):
+            return path
+        for child in problem.expand(node):
+            if child[0] not in visited:
+                stack.push((child[0], path + [child[1]]))
+                
+                
+    return []
+
+    #print("Start:", problem.getStartState())
+    
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.Queue()
+    queue.push((problem.getStartState(),[]))
+    visited = []
+    visited.append(problem.getStartState())
+    while not queue.isEmpty():
+        node, path = queue.pop()
+        #print(node)
+        if problem.isGoalState(node):
+            return path
+        for child in problem.expand(node):
+            #print(child)
+            if child[0] not in visited:
+                queue.push((child[0], path + [child[1]]))
+                visited.append(child[0])
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -131,7 +161,21 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.PriorityQueue()
+    print(problem.getStartState())
+    queue.push((problem.getStartState(),[]), 0)
+    visited = [] 
+    while not queue.isEmpty():
+        node, path = queue.pop()
+        if problem.isGoalState(node):
+            return path
+        if node not in visited:
+            visited.append(node)
+            for child in problem.expand(node):
+                if child[0] not in visited:
+                    score = heuristic(child[0], problem) + problem.getActionCost(node, child[1], child[0])+ problem.getCostOfActionSequence(path)
+                    queue.update((child[0], path + [child[1]]), score)
+    return []
 
 
 # Abbreviations
