@@ -34,6 +34,7 @@ description for details.
 Good luck and happy searching!
 """
 
+from this import d
 from game import Directions
 from game import Agent
 from game import Actions
@@ -305,6 +306,7 @@ class CornersProblem(search.SearchProblem):
             if not startingGameState.hasFood(*corner):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
+        
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
@@ -315,14 +317,14 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return (self.startingPosition, [])  # list of corners visited
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return (len(state[1]) == 4) 
 
     def expand(self, state):
         """
@@ -340,6 +342,9 @@ class CornersProblem(search.SearchProblem):
             # Add a child state to the child list if the action is legal
             # You should call getActions, getActionCost, and getNextState.
             "*** YOUR CODE HERE ***"
+            next_state = self.getNextState(state, action)
+            action_cost = self.getActionCost(state, action, next_state)
+            children.append( ( next_state, action, action_cost) )
 
         self._expanded += 1 # DO NOT CHANGE
         return children
@@ -367,7 +372,16 @@ class CornersProblem(search.SearchProblem):
         dx, dy = Actions.directionToVector(action)
         nextx, nexty = int(x + dx), int(y + dy)
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #print(state)
+        new_state = state[1].copy()
+        if (nextx, nexty) in self.corners and [nextx, nexty] not in state[1]:
+            #print(state)
+            #self._expanded_corners += 1
+            new_state.append([nextx, nexty])
+        
+        return ((nextx, nexty), new_state)
+        
+
 
     def getCostOfActionSequence(self, actions):
         """
@@ -382,6 +396,8 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
+def manhattan(pos, goal):
+    return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
 
 def cornersHeuristic(state, problem):
     """
@@ -398,9 +414,30 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    pos = state[0]
+    visited_corners = state[1]
+    score = [0, 0, 0, 0]
+    index = 0
+    for corner in corners:
+        [x, y] = corner
+        if [x, y] not in visited_corners:
+            tem_score = manhattan(pos, corner)
+            score[index] = tem_score
+        index += 1
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    score = sorted(score, reverse=True)
+    print(score)
+    score = score[0]
+
+    """
+            if score == 0:
+                score = tem_score
+            elif tem_score < score:
+                score = tem_score
+            """
+
+    return score 
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -516,7 +553,16 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    food_list = foodGrid.asList()
+    max_score = 0
+    sum = 0
+    for food in food_list:
+        tem_score = manhattan(position, food)
+        if tem_score > max_score:
+            max_score = tem_score
+        sum += tem_score
+    #print(food_list)
+    return max_score
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -547,7 +593,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        path = search.aStarSearch(problem)
+        return path
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -583,7 +630,11 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        food_list = self.food.asList()
+        #print(food_list)
+        if (x, y) in food_list:
+            return True
+        return False
 
 def mazeDistance(point1, point2, gameState):
     """
